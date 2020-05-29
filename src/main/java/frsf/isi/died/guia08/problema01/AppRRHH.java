@@ -90,19 +90,14 @@ public class AppRRHH {
 		// por cada fila invocar a agregarEmpleadoContratado
 		try (BufferedReader rd = new BufferedReader(new FileReader(nombreArchivo)))	{
 			
-			Function<String,Empleado> mapper = s -> {
-				String[] linea = s.split(";");
-				//0-cuil 1-nombre 2-costohora 3-tipo
-				if(linea.length == 3)
-					return new Empleado(Integer.parseInt(linea[0]),linea[1],Double.parseDouble(linea[2]),Tipo.CONTRATADO);
-				else return null;
-			};
-			rd.lines().map(mapper).forEach(
-					e ->{
-						if(e != null)
-						empleados.add(e);
-						}
-					);
+			rd.lines().forEach(
+				s -> {
+					String[] linea = s.split(";");
+						if(linea.length == 3) {
+							empleados.add(new Empleado(Integer.parseInt(linea[0]),linea[1],Double.parseDouble(linea[2]),Tipo.CONTRATADO));
+						}		
+					}
+			);
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -118,19 +113,14 @@ public class AppRRHH {
 		// por cada fila invocar a agregarEmpleadoContratado	
 		try (BufferedReader rd = new BufferedReader(new FileReader(nombreArchivo)))	{
 			
-			Function<String,Empleado> mapper = s -> {
-				String[] linea = s.split(";");
-				//0-cuil 1-nombre 2-costohora 3-tipo
-				if(linea.length == 3)
-					return new Empleado(Integer.parseInt(linea[0]),linea[1],Double.parseDouble(linea[2]),Tipo.EFECTIVO);
-				else return null;
-			};
-			rd.lines().map(mapper).forEach(
-					e ->{
-						if(e != null)
-						empleados.add(e);
+			rd.lines().forEach(
+					s -> {
+						String[] linea = s.split(";");
+							if(linea.length == 3) {
+								empleados.add(new Empleado(Integer.parseInt(linea[0]),linea[1],Double.parseDouble(linea[2]),Tipo.EFECTIVO));
+							}		
 						}
-					);
+				);
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -148,27 +138,24 @@ public class AppRRHH {
 		
 		try (BufferedReader rd = new BufferedReader(new FileReader(nombreArchivo)))	{
 			
-			Function<String,Tarea> mapper = t -> {
-				String[] linea = t.split(";");
-				//0-id 1-descripcion 2-duracion 3-cuil de empleado
-				if(linea.length == 4) {
-					System.out.println(linea[3]);
-					Tarea tarea = new Tarea(Integer.parseInt(linea[0]),linea[1],Integer.parseInt(linea[2]));
-					
-					Optional<Empleado> optEmpleado = empleados.stream().filter(e -> e.getCuil().equals(Integer.parseInt(linea[3]))).findAny();		
-					
-					if(!optEmpleado.isEmpty()) {
-						try {
-							optEmpleado.get().asignarTarea(tarea);
-						} catch (NoSePuedeAsignarTareaException e1) {
-							System.out.println(e1.getMessage());
-						}	
-					}
-					return tarea;
-				}
-				else return null;
-			};
-			rd.lines().map(mapper);
+			
+			rd.lines().forEach(
+					s -> {
+						String[] linea = s.split(";");
+							if(linea.length == 4) {
+								Tarea tarea = new Tarea(Integer.parseInt(linea[0]),linea[1],Integer.parseInt(linea[2]));
+								Optional<Empleado> optEmpleado = empleados.stream().filter(e -> e.getCuil().equals(Integer.parseInt(linea[3]))).findAny();
+								if(!optEmpleado.isEmpty()) {
+									try {
+										optEmpleado.get().asignarTarea(tarea);
+									} catch (NoSePuedeAsignarTareaException e1) {
+										System.out.println(e1.getMessage());
+									}	
+								}
+							}		
+						}
+				);
+			
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -191,7 +178,7 @@ public class AppRRHH {
 					.stream()
 					.map(e -> e.getTareasAsignadas())
 					.flatMap(t -> t.stream())
-					.filter(t -> !t.getFacturada())
+					.filter(t -> !t.getFacturada() && t.getFechaFin()!=null)
 					.forEach(t -> {
 						try {
 							out.write(t.asCsv()+ System.getProperty("line.separator"));

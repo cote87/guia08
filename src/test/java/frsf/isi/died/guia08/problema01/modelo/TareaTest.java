@@ -1,14 +1,28 @@
 package frsf.isi.died.guia08.problema01.modelo;
 
-import static org.junit.Assert.*;
-
+import org.junit.Before;
 import org.junit.Test;
 
-public class TareaTest {
+import frsf.isi.died.guia08.problema01.AppRRHH;
+import frsf.isi.died.guia08.problema01.modelo.exception.NoSePuedeAsignarTareaException;
 
-	@Test
-	public void asignarEmpleadoTest() {
-		fail("Not yet implemented");
+public class TareaTest {
+	
+	AppRRHH app;
+	
+	@Before
+	public void init() {
+		app = new AppRRHH();
+		app.cargarEmpleadosContratadosCSV("testEmpleadosC.csv");
+		app.cargarTareasCSV("TestTareas.csv");
+	}
+	
+	@Test(expected = NoSePuedeAsignarTareaException.class)
+	public void testAsigarTareaDeOtroEmpleado() throws NoSePuedeAsignarTareaException{
+		Empleado e1 = app.getEmpleados().get(0);
+		Empleado e2 = app.getEmpleados().get(1);
+		Tarea t = e1.getTareasAsignadas().get(0);
+		t.asignarEmpleado(e2);
 	}
 
 }

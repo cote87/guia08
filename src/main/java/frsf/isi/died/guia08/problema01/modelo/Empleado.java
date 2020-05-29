@@ -3,6 +3,7 @@ package frsf.isi.died.guia08.problema01.modelo;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,17 +70,20 @@ public class Empleado {
 	 * @param t
 	 * @return
 	 */
-	public Double costoTarea(Tarea t) {
-		return 0.0;
-	}
+	//public Double costoTarea(Tarea t) {
+		//Resolví esta lógica sin ver este método en el momento que se le asigna un Tipo al empleado, en setTipo(Tipo),
+		//ya que depende del tipo de empleado que sea varía su cálculo.
+		//return 0.0;
+	//}
 		
 	public Boolean asignarTarea(Tarea t) throws NoSePuedeAsignarTareaException{
 		if(this.puedeAsignarTarea.test(this)) {
-			//Se asigna a la lista de tareas de este empleado la nueva tarea
-			this.tareasAsignadas.add(t);
 			try {
 				//Se asigna a la tarea este empleado
 				t.asignarEmpleado(this);
+				//Se asigna a la lista de tareas de este empleado la nueva tarea
+				this.tareasAsignadas.add(t);
+				return true;
 			} catch (TareaFinalizadaException e) {
 				System.out.println(e.getMessage());
 			} catch (TareaPreviamenteAsignadaException e) {
@@ -162,10 +166,15 @@ public class Empleado {
 		if(tipo.equals(Tipo.CONTRATADO)){
 			this.puedeAsignarTarea = empleado -> empleado.getTareasSinFinalizar() < 5;
 			this.calculoPagoPorTarea = tarea -> {
-												if(Duration.between(tarea.getFechaInicio(), tarea.getFechaFin()).compareTo(Duration.ofDays(tarea.getDuracionEstimada())) < 0 ) 
+												Duration diasTrabajados = Duration.between(tarea.getFechaInicio(), tarea.getFechaFin());
+												Duration diasEstimados = Duration.ofDays(tarea.getDiasEstimados());
+												if(diasTrabajados.compareTo(diasEstimados) < 0 ) 
 													return this.getCostoHora()* 1.3;
-												if(Duration.between(tarea.getFechaInicio(), tarea.getFechaFin()).compareTo(Duration.ofDays(tarea.getDuracionEstimada())) > 0 ) 
-													return this.getCostoHora()* 0.75;
+												if(diasTrabajados.compareTo(diasEstimados) > 0 ) {
+													long dias = (diasTrabajados.getSeconds() - diasEstimados.getSeconds())/60/60/24;
+													if(dias > 2)
+														return this.getCostoHora()* 0.75;				
+												}
 												return this.getCostoHora();
 												};
 			this.tipo = tipo;
@@ -173,7 +182,7 @@ public class Empleado {
 		if(tipo.equals(Tipo.EFECTIVO)) {
 			this.puedeAsignarTarea = empleado -> empleado.getHorasAcumuladas() < 15;
 			this.calculoPagoPorTarea = tarea -> {
-												if(Duration.between(tarea.getFechaInicio(), tarea.getFechaFin()).compareTo(Duration.ofDays(tarea.getDuracionEstimada())) < 0 ) 
+												if(Duration.between(tarea.getFechaInicio(), tarea.getFechaFin()).compareTo(Duration.ofDays(tarea.getDiasEstimados())) < 0 ) 
 													return this.getCostoHora()* 1.2;
 												else 
 													return this.getCostoHora();
@@ -197,7 +206,7 @@ public class Empleado {
 		int cantidadDeTareas = 0;
 		if(this.tareasAsignadas != null) {
 			for(Tarea tarea : this.tareasAsignadas){
-				if(!tarea.getFacturada())
+				if(tarea.getFechaFin() == null)
 					cantidadDeTareas = cantidadDeTareas + 1;
 			}
 		}

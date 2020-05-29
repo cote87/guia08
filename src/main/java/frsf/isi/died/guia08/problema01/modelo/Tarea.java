@@ -92,8 +92,15 @@ public class Tarea {
 		return empleadoAsignado;
 	}
 
-	public Integer getHorasEstimadas() {
-		return this.getDuracionEstimada()*4;
+	public Integer getDiasEstimados() {
+		Integer dias=0;
+		if(this.getDuracionEstimada()%4 != 0) {
+			dias = this.getDuracionEstimada()/4;
+		}
+		else {
+			dias = (this.getDuracionEstimada()/4)+1;
+		}
+		return dias;
 	}
 	
 	@Override
